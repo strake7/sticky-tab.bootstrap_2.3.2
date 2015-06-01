@@ -3,7 +3,10 @@
         Only one sticky-tab group should exist per page
  * ============ */
 $(function () {
-    var __key = location.pathName  + ".sticky-tab" // local storage sticky tab key
+    var __key = location.pathName  + ".sticky-tab", // local storage sticky tab key
+        __initial = location.hash || localStorage.getItem(__key), // initial value
+        __tabs = $("[data-toggle=sticky-tab]")
+
     $('body').on('click.sticky-tab.data-api', '[data-toggle="sticky-tab"]', function (e) {
         e.preventDefault()
         $(this).tab('show')
@@ -14,23 +17,28 @@ $(function () {
         if (!hash)
             // no hash target found
             return;
+        var el = $(hash)
         // defuse the target node to prevent hash scroll
-        var node = $(hash)
-        if (node.length > 0)
-            // strip id from node (defuse)
-            node.attr('id', "")
+        if (el.length > 0)
+            el.attr('id', "")
         document.location.hash = hash
         localStorage.setItem(__key, hash)
         // fuse back the target node
-        if (node.length > 0)
-            node.attr('id', hash.replace(/^#/, ""))
+        if (el.length > 0)
+            el.attr('id', hash.replace(/^#/, ""))
     })
 
-    // load location hash tab if stick tabs
-    var __initial = location.hash || localStorage.getItem(__key)
-    if (__initial && $("[data-toggle=sticky-tab]").length > 0) {
-        var node = $("a[href=" + __initial + "]")
-        if (node && node.attr("data-toggle") === "sticky-tab")
-            node.tab('show')
-    }
+    // load location hash tab if sticky tabs
+    if (__tabs.length === 0)
+        return;
+
+    if (__initial) {
+        // has initial value
+        var el = $("a[href=" + __initial + "]")
+        if (el && el.attr("data-toggle") === "sticky-tab")
+            el.tab('show')
+        else 
+            $(__tabs[0]).tab('show')
+    } else 
+        $(__tabs[0]).tab('show')
 })
